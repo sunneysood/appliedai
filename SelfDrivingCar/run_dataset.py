@@ -4,12 +4,12 @@
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
-
 import scipy.misc
 import model
 import cv2
 from subprocess import call
 import math, os
+import numpy as np
 
 sess = tf.InteractiveSession()
 saver = tf.train.Saver()
@@ -37,7 +37,16 @@ num_images = len(xs)
 
 
 i = math.ceil(num_images*0.7)
+reduced = i + 50
 print("Starting frameofvideo:" +str(i))
+
+#https://stackoverflow.com/questions/9041681/opencv-python-rotate-image-by-x-degrees-around-specific-point
+def rotateImage(image, angle):
+  image_center = tuple(np.array(image.shape[1::-1]) / 2)
+  rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+  result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+  return result
+
 
 #while(cv2.waitKey(10) != ord('q')):
 while i < num_images:   
@@ -46,8 +55,11 @@ while i < num_images:
     degrees = model.y.eval(feed_dict={model.x: [image], model.keep_prob: 1.0})[0][0] * 180.0 / scipy.pi
     #call("clear")
     #print("Predicted Steering angle: " + str(degrees))
-    print("Steering angle: " + str(degrees) + " (pred)\t" + str(ys[i]*180/scipy.pi) + " (actual)")
+    print("Steering angle: " + str(degrees) + " (pred)\t" + str(ys[i]*180/scipy.pi) + "(actual)")
     #cv2.imshow("frame", cv2.cvtColor(full_image, cv2.COLOR_RGB2BGR))
+    # Commenting this line as gcp can't display images 
+    #https://stackoverflow.com/questions/52644763/gcp-aws-instances-not-working-with-opencv-imshow
+    
     #make smooth angle transitions by turning the steering wheel based on the difference of the current angle
     #and the predicted angle
     smoothed_angle += 0.2 * pow(abs((degrees - smoothed_angle)), 2.0 / 3.0) * (degrees - smoothed_angle) / abs(degrees - smoothed_angle)
@@ -55,11 +67,14 @@ while i < num_images:
     dst = cv2.warpAffine(img,M,(cols,rows))
     
     #https://stackoverflow.com/questions/41586429/opencv-saving-images-to-a-particular-folder-of-choice/41587740
-    path = 'test_output/'
+    path = 'sample/'
     output_file_name = "str_"+ str(i) + ".jpg"
     cv2.imwrite(os.path.join(path , output_file_name), dst)
-    cv2.waitKey(0)
     
+    #cv2.imwrite(os.path.join(path , output_file_name), rotateImage(img,degrees))
+    #cv2.waitKey(0)
+    # Commenting this line as gcp can't display images 
+    #https://stackoverflow.com/questions/52644763/gcp-aws-instances-not-working-with-opencv-imshow
     #cv2.imshow("steering wheel", dst)
     i += 1
 

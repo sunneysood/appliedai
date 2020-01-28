@@ -90,4 +90,4 @@ b_fc5 = bias_variable([1])
 
 #y = tf.multiply(tf.atan(tf.matmul(h_fc4_drop, W_fc5) + b_fc5), 2) #scale the atan output
 #https://www.tensorflow.org/api_docs/python/tf/identity
-y = tf.identity(tf.matmul(h_fc4_drop, W_fc5) + b_fc5)
+y = tf.matmul(h_fc4_drop, W_fc5) + b_fc5

@@ -10,12 +10,6 @@ tf.disable_v2_behavior()
 
 LOGDIR = './save'
 
-#https://stackoverflow.com/questions/56820327/the-name-tf-session-is-deprecated-please-use-tf-compat-v1-session-instead
-
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-
-
 sess = tf.InteractiveSession()
 
 L2NormConst = 0.001
@@ -23,9 +17,8 @@ L2NormConst = 0.001
 train_vars = tf.trainable_variables()
 
 
-
 loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y))) + tf.add_n([tf.nn.l2_loss(v) for v in train_vars]) * L2NormConst
-train_step = tf.train.AdamOptimizer(1e-3).minimize(loss)
+train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 sess.run(tf.initialize_all_variables())
 
 # create a summary to monitor cost tensor
@@ -49,7 +42,7 @@ for epoch in range(epochs):
     train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
     if i % 10 == 0:
       xs, ys = driving_data.LoadValBatch(batch_size)
-      loss_value = loss.eval(feed_dict={model.x:xs, model.y_: ys, model.keep_prob: 1.0})
+      loss_value = loss.eval(feed_dict={model.x:xs, model.y_: ys, model.keep_prob: 0.5})
       print("Epoch: %d, Step: %d, Loss: %g" % (epoch, epoch * batch_size + i, loss_value))
 
     # write logs at every iteration
